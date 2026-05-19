@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creación de Personajes</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <h1 class="brand">🩸 Dark Forge</h1>
+        <section class="auth-panel">
+          <p id="auth-status" class="auth-status">No autenticado</p>
+          <button id="google-login-btn" class="primary auth-btn">Ingresar con Google</button>
+          <button id="logout-btn" class="secondary auth-btn hidden">Cerrar sesión</button>
+        </section>
+        <nav>
+          <button class="menu-btn active" data-view="creation">Creación de Personajes</button>
+          <button class="menu-btn" data-view="gallery">Galería de Personajes</button>
+          <button class="menu-btn" data-view="suspects">Sospechosos</button>
+          <button class="menu-btn" data-view="crime-scene">Escena del crimen</button>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section id="creation-view" class="view active">
+          <header class="view-header">
+            <h2>Creación de Personajes</h2>
+            <button id="add-character-btn" class="knife-btn">🔪 Agregar Psicópata</button>
+          </header>
+        </section>
+
+        <section id="gallery-view" class="view">
+          <header class="view-header">
+            <h2>Galería de Personajes</h2>
+          </header>
+          <div id="gallery-grid" class="gallery-grid"></div>
+          <p id="empty-msg" class="empty-msg">No hay personajes registrados todavía.</p>
+        </section>
+
+        <section id="suspects-view" class="view">
+          <header class="view-header">
+            <h2>Sospechosos en línea</h2>
+            <button id="open-play-btn" class="primary">JUGAR</button>
+          </header>
+
+          <div class="suspects-layout">
+            <article class="suspects-panel">
+              <h3>Usuarios conectados</h3>
+              <div id="online-users-list" class="suspects-list"></div>
+            </article>
+
+            <article class="suspects-panel">
+              <h3>Grupo actual (<span id="group-count">0</span> participantes)</h3>
+              <ul id="group-members" class="group-members"></ul>
+            </article>
+
+          </div>
+        </section>
+
+        <section id="crime-scene-view" class="view">
+          <header class="view-header">
+            <h2>Escena del crimen</h2>
+            <button id="open-crime-scene-btn" class="primary">ENTRAR A LA PARTIDA</button>
+          </header>
+          <p class="meta">Primero elige personaje. Luego entrarás al chat con tu rol oculto.</p>
+          <div class="crime-scene-layout">
+            <aside class="suspects-panel">
+              <h3>Personajes jugando</h3>
+              <div id="scene-players-list" class="suspects-list"></div>
+            </aside>
+            <section class="suspects-panel">
+              <h3>Detalle del personaje seleccionado</h3>
+              <article id="scene-character-detail" class="player-profile"></article>
+              <button id="kill-player-btn" type="button" class="primary hidden">Asesinar</button>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="character-select-overlay" class="modal-overlay hidden">
+      <div class="modal-panel play-modal-panel">
+        <header class="modal-header">
+          <h3>Seleccionar personaje</h3>
+          <button type="button" id="close-character-select-btn" class="secondary">✕</button>
+        </header>
+        <button id="confirm-character-btn" type="button" class="primary full-width">JUGAR</button>
+        <p class="meta">Si un personaje ya está tomado en el grupo, aparecerá bloqueado.</p>
+        <div id="character-options" class="character-options"></div>
+      </div>
+    </div>
+
+    <div id="game-overlay" class="modal-overlay hidden">
+      <div class="game-screen">
+        <aside class="game-chat-panel">
+          <header class="game-panel-header">
+            <h3>Chat en vivo</h3>
+            <p class="meta">Máximo 15 mensajes visibles</p>
+          </header>
+          <div id="game-chat-messages" class="game-chat-messages"></div>
+          <form id="game-chat-form" class="game-chat-form">
+            <input id="game-chat-input" type="text" maxlength="200" placeholder="Escribe un mensaje..." required />
+            <button class="primary" type="submit">Enviar</button>
+          </form>
+        </aside>
+
+        <section class="game-profile-panel">
+          <header class="modal-header">
+            <h3>Pantalla de juego</h3>
+            <button type="button" id="close-game-btn" class="secondary">✕</button>
+            <button type="button" id="end-game-btn" class="primary">Terminar partida</button>
+          </header>
+
+          <article id="player-profile" class="player-profile"></article>
+        </section>
+      </div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <div class="modal-panel">
+        <header class="modal-header">
+          <h3>Nuevo personaje</h3>
+          <button type="button" id="close-modal-btn" class="secondary">✕</button>
+        </header>
+
+        <form id="character-form" class="character-form">
+          <div class="form-section basic-section">
+            <h4>Básico</h4>
+            <div class="field"><label for="nombre">Nombre</label><input id="nombre" required /></div>
+
+            <div class="field">
+              <label for="imageSource">Foto de perfil</label>
+              <select id="imageSource" required>
+                <option value="file">Archivo desde el dispositivo</option>
+                <option value="url">URL</option>
+              </select>
+            </div>
+
+            <div class="field" id="imageFileField">
+              <label for="imageFile">Archivo de imagen</label>
+              <input type="file" id="imageFile" accept="image/*" />
+            </div>
+
+            <div class="field hidden" id="imageUrlField">
+              <label for="imageUrl">URL de imagen</label>
+              <input type="url" id="imageUrl" placeholder="https://..." />
+            </div>
+          </div>
+
+          <div class="form-section mental-section">
+            <h4>Perfil psicológico e historia</h4>
+            <div class="field"><label for="historia">Historia</label><textarea id="historia" required></textarea></div>
+            <div class="field"><label for="rasgos">Rasgos psicológicos</label><textarea id="rasgos" required></textarea></div>
+            <div class="field"><label for="traumas">Traumas y fijaciones</label><textarea id="traumas" required></textarea></div>
+            <div class="field"><label for="miedo">Miedo oculto</label><textarea id="miedo" required></textarea></div>
+            <div class="field"><label for="dialogo">Diálogo postmorten</label><textarea id="dialogo"></textarea></div>
+          </div>
+
+          <div class="form-section physical-section">
+            <h4>Físico</h4>
+            <div class="field">
+              <label for="cabello">Color de cabello</label>
+              <select id="cabello" required>
+                <option value="">Seleccionar...</option>
+                <option>Morocho</option>
+                <option>Rubio</option>
+                <option>Castaño</option>
+                <option>Pelirrojo</option>
+                <option>Otro</option>
+                <option>Blanco</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ojos">Color de ojos</label>
+              <select id="ojos" required>
+                <option value="">Seleccionar...</option>
+                <option>Celestes</option>
+                <option>Verdes</option>
+                <option>Marrones</option>
+                <option>Negro</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="genero">Género</label>
+              <select id="genero" required>
+                <option value="">Seleccionar...</option>
+                <option>Hombre</option>
+                <option>Mujer</option>
+                <option>Trans</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="estatura">Estatura</label>
+              <select id="estatura" required>
+                <option value="">Seleccionar...</option>
+                <option>Alto</option>
+                <option>Promedio</option>
+                <option>Petizo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="tez">Tez</label>
+              <select id="tez" required>
+                <option value="">Seleccionar...</option>
+                <option>Moreno</option>
+                <option>Mestizo</option>
+                <option>Pálido</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="save-character-btn" type="submit" class="primary">Guardar</button>
+            <button type="button" id="cancel-btn" class="secondary">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="gallery-context-menu" class="gallery-context-menu hidden">
+      <button id="context-edit-btn" type="button" class="secondary">Editar</button>
+      <button id="context-delete-btn" type="button" class="secondary danger">Eliminar</button>
+    </div>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
