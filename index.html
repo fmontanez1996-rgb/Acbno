@@ -17,33 +17,39 @@
           <button id="logout-btn" class="secondary auth-btn hidden">Cerrar sesión</button>
         </section>
         <nav>
-          <button class="menu-btn active" data-view="creation">Creación de Personajes</button>
-          <button class="menu-btn" data-view="gallery">Galería de Personajes</button>
+          <button class="menu-btn active" data-view="gallery">Galería de Personajes</button>
           <button class="menu-btn" data-view="suspects">Sospechosos</button>
           <button class="menu-btn" data-view="crime-scene">Escena del crimen</button>
         </nav>
       </aside>
 
       <main class="content">
-        <section id="creation-view" class="view active">
-          <header class="view-header">
-            <h2>Creación de Personajes</h2>
-            <button id="add-character-btn" class="knife-btn">🔪 Agregar Psicópata</button>
-          </header>
-        </section>
-
-        <section id="gallery-view" class="view">
+        <section id="gallery-view" class="view active">
           <header class="view-header">
             <h2>Galería de Personajes</h2>
+            <button id="add-character-btn" class="knife-btn">🔪 Agregar Psicópata</button>
           </header>
           <div id="gallery-grid" class="gallery-grid"></div>
           <p id="empty-msg" class="empty-msg">No hay personajes registrados todavía.</p>
         </section>
 
+        <div id="character-detail-overlay" class="modal-overlay hidden">
+          <div class="modal-panel">
+            <header class="modal-header">
+              <h3>Ficha del personaje</h3>
+              <button type="button" id="close-character-detail-btn" class="secondary">✕</button>
+            </header>
+            <article id="character-detail-content" class="character-detail-content"></article>
+          </div>
+        </div>
+
         <section id="suspects-view" class="view">
           <header class="view-header">
             <h2>Sospechosos en línea</h2>
-            <button id="open-play-btn" class="primary">JUGAR</button>
+            <div class="suspects-actions">
+              <button id="open-play-btn" class="primary">JUGAR</button>
+              <button id="open-character-btn" class="secondary">PERSONAJE</button>
+            </div>
           </header>
 
           <div class="suspects-layout">
@@ -61,20 +67,41 @@
         </section>
 
         <section id="crime-scene-view" class="view">
-          <header class="view-header">
+          <header class="view-header crime-scene-header">
             <h2>Escena del crimen</h2>
-            <button id="open-crime-scene-btn" class="primary">ENTRAR A LA PARTIDA</button>
+            <div class="crime-scene-tabs" aria-label="Navegación de escena del crimen">
+              <button type="button" id="crime-tab-clues" class="secondary">PISTAS</button>
+              <button type="button" id="crime-tab-characters" class="secondary active">PERSONAJES</button>
+              <button type="button" id="crime-tab-phases" class="secondary">FASES</button>
+            </div>
+            <button id="open-crime-scene-btn" class="primary">ABRIR ESCENA</button>
           </header>
           <p class="meta">Primero elige personaje. Luego entrarás al chat con tu rol oculto.</p>
+          <button id="crime-scene-new-game-btn" class="crime-scene-new-game-btn hidden" type="button">NUEVA PARTIDA</button>
           <div class="crime-scene-layout">
-            <aside class="suspects-panel">
+            <aside id="crime-characters-panel" class="suspects-panel">
               <h3>Personajes jugando</h3>
               <div id="scene-players-list" class="suspects-list"></div>
             </aside>
-            <section class="suspects-panel">
+            <section id="crime-characters-detail-panel" class="suspects-panel">
               <h3>Detalle del personaje seleccionado</h3>
               <article id="scene-character-detail" class="player-profile"></article>
-              <button id="kill-player-btn" type="button" class="primary hidden">Asesinar</button>
+              <button id="kill-player-btn" type="button" class="primary hidden">ASESINAR</button>
+              <button id="accuse-player-btn" type="button" class="primary hidden">ACUSAR</button>
+            </section>
+            <section id="crime-phases-panel" class="suspects-panel hidden">
+              <h3>Fases del día</h3>
+              <ol id="phases-list" class="phases-list"></ol>
+              <p id="phase-progress" class="meta"></p>
+              <div class="phase-actions">
+                <button id="next-phase-btn" type="button" class="primary">SIGUIENTE FASE</button>
+                <button id="phase-accuse-btn" type="button" class="primary hidden">ACUSAR</button>
+              </div>
+              <div id="phase-accuse-list" class="phase-accuse-list hidden"></div>
+            </section>
+            <section id="crime-clues-panel" class="suspects-panel hidden">
+              <h3>Pistas marcadas</h3>
+              <div id="clues-list" class="clues-list"></div>
             </section>
           </div>
         </section>
@@ -89,16 +116,38 @@
         </header>
         <button id="confirm-character-btn" type="button" class="primary full-width">JUGAR</button>
         <p class="meta">Si un personaje ya está tomado en el grupo, aparecerá bloqueado.</p>
-        <div id="character-options" class="character-options"></div>
+        <div class="character-picker-layout">
+          <div id="character-options" class="character-options"></div>
+          <article id="character-preview" class="character-preview">
+            <p class="meta">Selecciona un personaje para ver su ficha completa.</p>
+          </article>
+        </div>
       </div>
     </div>
 
     <div id="game-overlay" class="modal-overlay hidden">
       <div class="game-screen">
+        <section class="crime-room-panel">
+          <header class="game-panel-header">
+            <h3>Sala del crimen</h3>
+            <p class="meta">Haz click en una sección para entrar a su chat privado.</p>
+          </header>
+          <div id="crime-room-grid" class="crime-room-grid">
+            <button type="button" class="crime-room-cell noroeste" data-section="noroeste">Noroeste · BAÑO</button>
+            <button type="button" class="crime-room-cell centro-arriba" data-section="centro-arriba">Centro Arriba · Sala de estar</button>
+            <button type="button" class="crime-room-cell noreste" data-section="noreste">Noreste · Cocina</button>
+            <button type="button" class="crime-room-cell suroeste" data-section="suroeste">Suroeste · Habitación</button>
+            <button type="button" class="crime-room-cell centro-abajo" data-section="centro-abajo">Centro Abajo · Patio</button>
+            <button type="button" class="crime-room-cell sureste" data-section="sureste">Sureste · Sótano</button>
+          </div>
+          <article id="player-profile" class="player-profile"></article>
+        </section>
+
         <aside class="game-chat-panel">
           <header class="game-panel-header">
-            <h3>Chat en vivo</h3>
-            <p class="meta">Máximo 15 mensajes visibles</p>
+            <h3>Chat de sección</h3>
+            <p id="active-chat-section" class="meta">Sin sección seleccionada</p>
+            <p class="meta">Máximo 10 mensajes visibles</p>
           </header>
           <div id="game-chat-messages" class="game-chat-messages"></div>
           <form id="game-chat-form" class="game-chat-form">
@@ -113,9 +162,19 @@
             <button type="button" id="close-game-btn" class="secondary">✕</button>
             <button type="button" id="end-game-btn" class="primary">Terminar partida</button>
           </header>
-
-          <article id="player-profile" class="player-profile"></article>
         </section>
+      </div>
+    </div>
+
+    <div id="dawn-overlay" class="modal-overlay hidden">
+      <div class="modal-panel dawn-panel">
+        <header class="modal-header">
+          <h3>AMANECER</h3>
+          <button type="button" id="close-dawn-btn" class="secondary">✕</button>
+        </header>
+        <p id="dawn-message" class="dawn-message">UN PERSONAJE HA SIDO ASESINADO DURANTE LA NOCHE.</p>
+        <button id="dawn-next-phase-btn" type="button" class="primary full-width">Pasar a la siguiente Fase</button>
+        <p class="meta">Si no votas ahora, podrás hacerlo luego desde la pestaña FASES.</p>
       </div>
     </div>
 
@@ -223,6 +282,11 @@
     <div id="gallery-context-menu" class="gallery-context-menu hidden">
       <button id="context-edit-btn" type="button" class="secondary">Editar</button>
       <button id="context-delete-btn" type="button" class="secondary danger">Eliminar</button>
+    </div>
+
+    <div id="crime-context-menu" class="gallery-context-menu hidden">
+      <button id="crime-action-btn" type="button" class="secondary danger">ASESINAR</button>
+      <button id="crime-cancel-btn" type="button" class="secondary">CANCELAR</button>
     </div>
 
     <script type="module" src="script.js"></script>
